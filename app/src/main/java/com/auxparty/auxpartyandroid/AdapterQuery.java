@@ -2,12 +2,18 @@ package com.auxparty.auxpartyandroid;
 
 import android.database.DataSetObserver;
 import android.provider.ContactsContract;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.TextView;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,13 +22,37 @@ public class AdapterQuery implements ListAdapter
     private List<SongObject> songs = new ArrayList<SongObject>();
     private List<DataSetObserver> observers = new ArrayList<DataSetObserver>();
 
+    public void addSong(SongObject song)
+    {
+        songs.add(song);
+        callObservers();
+    }
+
+    public void clearSongs()
+    {
+        songs.clear();
+        callObservers();
+    }
+
     //TODO
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        TextView tv = new TextView(parent.getContext());
+        SongObject song = songs.get(position);
 
-        tv.setText("My name is Daniel Ragsdale");
-        return tv;
+        LinearLayout container = new LinearLayout(parent.getContext());
+        container.setGravity(Gravity.CENTER_VERTICAL);
+
+        ImageView iv = new ImageView(parent.getContext());
+        iv.setImageBitmap(song.art);
+
+        TextView tv = new TextView(parent.getContext());
+        tv.setText(song.songTitle + "--" + song.artistName);
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 32);
+        tv.setMaxLines(1);
+
+        container.addView(iv);
+        container.addView(tv);
+        return container;
     }
 
     //TODO
@@ -40,7 +70,7 @@ public class AdapterQuery implements ListAdapter
     @Override
     public boolean isEnabled(int pos)
     {
-        return pos <= 3;
+        return pos < songs.size();
     }
 
     //region trivial methods
@@ -60,7 +90,7 @@ public class AdapterQuery implements ListAdapter
     @Override
     public int getCount() {
 //        return songs.size();
-        return 3;
+        return songs.size();
     }
 
     //MVP
@@ -93,12 +123,13 @@ public class AdapterQuery implements ListAdapter
         return false;
     }
     //endregion
+
+    private void callObservers()
+    {
+        for (DataSetObserver observer : observers)
+        {
+            observer.onChanged();
+        }
+    }
 }
 
-class SongObject
-{
-    public String artistName;
-    public String songTitle;
-    public String appleID;
-    public String artURL;
-}
