@@ -1,19 +1,21 @@
 package com.auxparty.auxpartyandroid;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
-import android.widget.ScrollView;
 
 import com.auxparty.auxpartyandroid.utilities.NetworkUtils;
 
@@ -25,32 +27,44 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity {
+public class ActivityClient extends AppCompatActivity {
 
     EditText mSearchBar;
     ListView mSearchPromptList;
     SquareImageView mAlbumArt;
     RelativeLayout mActivityMain;
     View mSearchTouchClose;
+    LinearLayout mLayoutSearch;
 
     AdapterQuery searchAdapter;
+
+    String identifier;
+    String name;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_client);
+
 
         mSearchBar = (EditText) findViewById(R.id.et_search_bar);
         mSearchPromptList = (ListView) findViewById(R.id.lv_search_prompt);
-        mActivityMain = (RelativeLayout) findViewById(R.id.activity_main);
+        mActivityMain = (RelativeLayout) findViewById(R.id.activity_client);
         mAlbumArt = (SquareImageView) findViewById(R.id.iv_album_cover);
-        mSearchTouchClose = (View) findViewById(R.id.v_search_touch_close);
+        mSearchTouchClose = findViewById(R.id.v_search_touch_close);
+        mLayoutSearch = (LinearLayout) findViewById(R.id.ll_search);
 
+        Intent startingIntent = getIntent();
+        identifier = startingIntent.getStringExtra("identifier");
+        name = startingIntent.getStringExtra("name");
 
-        mAlbumArt.setImageResource(R.mipmap.album_test);
+        getSupportActionBar().setTitle(name + " (" + identifier +")");
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#333333")));
 
         searchAdapter = new AdapterQuery();
         mSearchPromptList.setAdapter(searchAdapter);
+
+        mLayoutSearch.bringToFront();
 
         mSearchBar.setOnTouchListener(new View.OnTouchListener()
         {
@@ -73,10 +87,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         mSearchBar.addTextChangedListener(new QueryApple());
+
+        TaskGetArt getArt = new TaskGetArt();
+        getArt.execute(identifier);
     }
 
     class QueryApple implements TextWatcher {
-        SearchQueryTask mSearchTask = new SearchQueryTask();
+        TaskSearchQuery mSearchTask = new TaskSearchQuery();
 
         @Override
         public void afterTextChanged(Editable s){}
@@ -90,23 +107,27 @@ public class MainActivity extends AppCompatActivity {
             //Cancel the current task
             mSearchTask.cancel(true);
 
-            mSearchTask = new SearchQueryTask();
+            mSearchTask = new TaskSearchQuery();
             mSearchTask.execute(s);
         }
     }
 
-    class SearchQueryTask extends AsyncTask<CharSequence, SongObject, Void>
+    class TaskSearchQuery extends AsyncTask<CharSequence, SongObject, Void>
     {
+        boolean needsClear;
+
         @Override
         protected void onPreExecute()
         {
             //Clear the current song search results
-            searchAdapter.clearSongs();
+            needsClear = true;
         }
 
         @Override
         protected Void doInBackground(CharSequence... params)
         {
+            Log.d("auxparty", "Loading search results");
+
             URL searchURL = NetworkUtils.buildUrl(params[0].toString());
 
             //Get the list from apple
@@ -121,17 +142,25 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
-            try {
+            try
+            {
                 JSONObject jsonResults = new JSONObject(queryResults);
                 JSONArray results = jsonResults.getJSONArray("results");
 
-                for(int i = 0; i < results.length(); i++) {
+                for(int i = 0; i < results.length() && i < 15; i++)
+                {
+                    if(isCancelled())
+                    {
+                        return null;
+                    }
+
                     JSONObject item = results.getJSONObject(i);
 
-                    if (item.getBoolean("isStreamable"))
+                    if (item.getBoolean("isStreamable") && !item.getString("collectionExplicitness").equals("cleaned"))
                     {
                         SongObject song = new SongObject();
 
+                        song.sessionIdentifier = identifier;
                         song.songTitle = item.getString("trackName");
                         song.artistName = item.getString("artistName");
                         song.appleID = Integer.toString(item.getInt("trackId"));
@@ -155,7 +184,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
 
-            } catch (JSONException e) {
+            }
+            catch (JSONException e)
+            {
                 e.printStackTrace();
             }
 
@@ -165,7 +196,64 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(SongObject... song)
         {
+            if(needsClear)
+            {
+                searchAdapter.clearSongs();
+                needsClear = false;
+            }
+
             searchAdapter.addSong(song[0]);
+        }
+    }
+
+    class TaskGetArt extends AsyncTask<CharSequence, Void, Bitmap>
+    {
+        @Override
+        protected Bitmap doInBackground(CharSequence... params) {
+            Bitmap art = null;
+
+            try
+            {
+                String nowPlaying = NetworkUtils.getResponseFromHttpUrl(new URL("http://auxparty.com/api/neutral/nowplaying/" + params[0].toString()));
+
+                JSONObject playingInfo = new JSONObject(nowPlaying);
+                String playingID = playingInfo.getString("apple_id");
+
+
+                String lookup = NetworkUtils.getResponseFromHttpUrl(new URL("https://itunes.apple.com/lookup?id=" + playingID));
+
+                JSONObject songInfo = new JSONObject(lookup);
+                JSONObject results = songInfo.getJSONArray("results").getJSONObject(0);
+
+                String artLoc = results.getString("artworkUrl100");
+
+                String largeArtLoc = artLoc.replace("100","512");
+
+                art = NetworkUtils.getBitmapFromHttpURL(largeArtLoc);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+            catch (JSONException e)
+            {
+                e.printStackTrace();
+            }
+
+            return art;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap art)
+        {
+            if(art != null)
+            {
+                mAlbumArt.setImageBitmap(art);
+            }
+            else
+            {
+                //Set album not found art
+            }
         }
     }
 }
