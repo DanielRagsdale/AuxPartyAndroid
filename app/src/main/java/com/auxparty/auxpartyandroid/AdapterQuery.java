@@ -3,14 +3,11 @@ package com.auxparty.auxpartyandroid;
 import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.provider.ContactsContract;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Adapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
@@ -18,8 +15,10 @@ import android.widget.TextView;
 
 import com.auxparty.auxpartyandroid.utilities.NetworkUtils;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -61,6 +60,8 @@ public class AdapterQuery implements ListAdapter
 
         final ImageView iv = new ImageView(parent.getContext());
         iv.setImageBitmap(song.art);
+        iv.setAdjustViewBounds(true);
+        iv.setMaxHeight(100);
 
         final TextView tv = new TextView(parent.getContext());
         tv.setText(song.songTitle + "--" + song.artistName);
@@ -84,7 +85,7 @@ public class AdapterQuery implements ListAdapter
                if(!song.requested)
                {
                    TaskSendRequest sendRequest = new TaskSendRequest();
-                   sendRequest.execute(song.sessionIdentifier, song.appleID);
+                   sendRequest.execute(song.sessionIdentifier, song.servicePlayID);
                }
 
                song.requested = true;
@@ -177,11 +178,14 @@ public class AdapterQuery implements ListAdapter
         {
             Log.d("auxparty", "Request submitted");
 
-            String data = params[1];
-
             try
             {
-                String response = NetworkUtils.postDataToHttpURL(new URL("http://auxparty.com/api/client/request/" + params[0]), data);
+
+                JSONObject jsonData = new JSONObject();
+                jsonData.put("apple_id", params[1]);
+                jsonData.put("hype_val","0.5");
+
+                String response = NetworkUtils.postDataToHttpURL(new URL("http://auxparty.com/api/client/request/" + params[0]), jsonData);
 
                 Log.d("auxparty", response);
             }
@@ -190,6 +194,10 @@ public class AdapterQuery implements ListAdapter
                 e.printStackTrace();
             }
             catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+            catch(JSONException e)
             {
                 e.printStackTrace();
             }

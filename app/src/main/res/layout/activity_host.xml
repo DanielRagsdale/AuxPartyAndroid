@@ -7,13 +7,14 @@
     android:layout_height="fill_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context="com.auxparty.auxpartyandroid.ActivityClient"
+    tools:context="com.auxparty.auxpartyandroid.ActivityHost"
     android:background="#449"
     android:id="@+id/activity_player">
 
     <include
         layout="@layout/component_song_search"
         android:id="@+id/comp_song_search"/>
+
 
     <View
         android:layout_width="wrap_content"
@@ -26,21 +27,8 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/ll_search" />
 
-    <SeekBar
-        android:id="@+id/sb_hype_slider"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:max="100"
-        android:progress="50"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:background="#000F"
-        android:layout_alignParentStart="true"
-        style="@style/Widget.AppCompat.SeekBar" />
-
-        <include
-            layout="@layout/component_album_art"
-            android:id="@+id/comp_album_art" />
+    <include
+        layout="@layout/component_album_art"
+        android:id="@+id/comp_album_art" />
 
 </RelativeLayout>

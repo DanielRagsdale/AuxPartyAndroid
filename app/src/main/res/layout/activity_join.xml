@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:padding="16dp"
+    tools:context="com.auxparty.auxpartyandroid.ActivityJoin"
+    android:windowSoftInputMode="stateHidden"
+    android:background="#449"
+    android:id="@+id/activity_join">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="161dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:gravity="center_vertical">
+
+        <EditText
+            android:id="@+id/et_identifier_enter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:inputType="textShortMessage"
+            android:ems="10"
+            android:background="#FFFFFFBB"
+            android:padding="7dp"
+            android:hint="Enter party ID"
+            android:textColorHint="?attr/actionMenuTextColor"
+            android:layout_toStartOf="@+id/b_go"
+            android:layout_toLeftOf="@+id/b_go"
+            android:maxLength="5"
+            android:layout_weight="1"/>
+
+        <Button
+            android:id="@+id/b_go"
+            android:text="go!"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_weight="1"/>
+    </LinearLayout>
+
+    <TextView
+        android:text="or"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/textView5"
+        android:textSize="32sp"
+        android:layout_above="@+id/b_gps_find"
+        android:layout_marginBottom="25dp"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:id="@+id/b_gps_find"
+        android:text="Find Nearest Party"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="18sp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="32dp"/>
+
+</RelativeLayout>

@@ -5,15 +5,13 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
-import org.json.JSONException;
+import com.auxparty.auxpartyandroid.TypeService;
+
 import org.json.JSONObject;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -27,27 +25,55 @@ import java.util.Scanner;
 public class NetworkUtils {
     final static String APPLE_SEARCH_URL = "https://itunes.apple.com/search";
     final static String APPLE_PARAM_QUERY = "term";
-    final static String APPLE_PARAM_ENTITY = "entity";
+    final static String APPLE_PARAM_TYPE = "entity";
 
-    final static String APPLE_PARAM_ENTITY_VALUE = "song";
+    final static String APPLE_PARAM_TYPE_VALUE = "song";
 
-    public static URL buildUrl(String appleSearchQuery) {
-        Uri builtUri = Uri.parse(APPLE_SEARCH_URL).buildUpon()
-                .appendQueryParameter(APPLE_PARAM_QUERY, appleSearchQuery)
-                .appendQueryParameter(APPLE_PARAM_ENTITY, APPLE_PARAM_ENTITY_VALUE)
-                .build();
+    final static String SPOTIFY_SEARCH_URL = "https://api.spotify.com/v1/search";
+    final static String SPOTIFY_PARAM_QUERY = "q";
+    final static String SPOTIFY_PARAM_TYPE = "type";
+
+    final static String SPOTIFY_PARAM_TYPE_VALUE = "track";
+
+    public static URL buildSearchUrl(String searchQuery, TypeService service)
+    {
+        Uri builtUri = null;
+        switch (service)
+        {
+            case APPLE_MUSIC:
+                builtUri = Uri.parse(APPLE_SEARCH_URL).buildUpon()
+                        .appendQueryParameter(APPLE_PARAM_QUERY, searchQuery)
+                        .appendQueryParameter(APPLE_PARAM_TYPE, APPLE_PARAM_TYPE_VALUE)
+                        .build();
+                break;
+
+            case SPOTIFY:
+                builtUri = Uri.parse(SPOTIFY_SEARCH_URL).buildUpon()
+                        .appendQueryParameter(SPOTIFY_PARAM_QUERY, searchQuery)
+                        .appendQueryParameter(SPOTIFY_PARAM_TYPE, SPOTIFY_PARAM_TYPE_VALUE)
+                        .build();
+                break;
+        }
 
         URL url = null;
-        try {
+        try
+        {
             url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
+        }
+        catch (MalformedURLException e)
+        {
+            e.printStackTrace();
+        }
+        catch (NullPointerException e)
+        {
             e.printStackTrace();
         }
 
         return url;
     }
 
-    public static String getResponseFromHttpUrl(URL url) throws IOException {
+    public static String getResponseFromHttpUrl(URL url) throws IOException
+    {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         try
         {
@@ -72,7 +98,7 @@ public class NetworkUtils {
         }
     }
 
-    public static String postDataToHttpURL(URL url, String data) throws IOException
+    public static String postDataToHttpURL(URL url, JSONObject jsonData) throws IOException
     {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("POST");
@@ -83,13 +109,8 @@ public class NetworkUtils {
         urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
         urlConnection.setRequestProperty("Accept", "application/json");
 
-        JSONObject jsonData = new JSONObject();
-
         try
         {
-            jsonData.put("apple_id",data);
-            jsonData.put("hype_val","0.5");
-
             OutputStreamWriter osw = new OutputStreamWriter(urlConnection.getOutputStream());
             osw.write(jsonData.toString());
             osw.flush();
@@ -111,15 +132,10 @@ public class NetworkUtils {
             }
 
         }
-        catch(JSONException e)
-        {
-            e.printStackTrace();
-        }
         finally
         {
             urlConnection.disconnect();
         }
-        return null;
     }
 
     public static Bitmap getBitmapFromHttpURL(String url) throws IOException
