@@ -3,10 +3,12 @@ package com.auxparty.auxpartyandroid;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.auxparty.auxpartyandroid.utilities.NetworkUtils;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -16,6 +18,15 @@ import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by dan on 1/4/17.
@@ -29,6 +40,8 @@ public class ActivityHost extends ActivityPlayer implements SpotifyPlayer.Notifi
     private static final int REQUEST_CODE = 1114;
 
     private Player mPlayer;
+
+    SongObject nowPlaying;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -74,6 +87,108 @@ public class ActivityHost extends ActivityPlayer implements SpotifyPlayer.Notifi
         }
     }
 
+    class TaskPlayFirstSong extends AsyncTask<Void, Void, SongObject>
+    {
+        @Override
+        protected SongObject doInBackground(Void... params)
+        {
+            Log.d("auxparty", "waiting for first song");
+
+            SongObject toPlay = null;
+
+            try
+            {
+                String request = NetworkUtils.getResponseFromHttpUrl(new URL("http://auxparty.com/api/host/data/" + identifier + "/?count=5"));
+
+                JSONObject jsonRequest = new JSONObject(request);
+                JSONArray tracks = jsonRequest.getJSONArray("tracks");
+
+                if(tracks.length() > 0)
+                {
+                    toPlay = new SongObject();
+
+                    JSONObject jsonSong = tracks.getJSONObject(0);
+
+                    toPlay.servicePlayID = tracks.getJSONObject(0).getJSONObject("song").getString("play_id");
+
+                    Log.d("auxparty", toPlay.servicePlayID + " song set up");
+                }
+            }
+            catch(IOException e)
+            {
+                e.printStackTrace();
+            }
+            catch(JSONException e)
+            {
+                e.printStackTrace();
+
+                Log.d("auxparty", "JSON Execption");
+            }
+            return toPlay;
+        }
+
+        @Override
+        protected void onPostExecute(SongObject toPlay)
+        {
+            if(toPlay == null)
+            {
+                Log.d("auxparty", "toPlay is null");
+            }
+            else
+            {
+                Log.d("auxparty", toPlay.servicePlayID);
+            }
+            if(toPlay != null && toPlay.servicePlayID != null)
+            {
+                playSong(toPlay);
+                updatePlaying.cancel();
+            }
+        }
+    }
+
+    private void playSong(SongObject song)
+    {
+        Log.d("auxparty", song.servicePlayID + " played");
+
+        mPlayer.playUri(null, "spotify:track:" + song.servicePlayID, 0, 0);
+        nowPlaying = song;
+    }
+
+    private Timer updatePlaying;
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+
+        if(nowPlaying == null)
+        {
+            updatePlaying = new Timer();
+            updatePlaying.schedule(new TimerTask()
+            {
+                @Override
+                public void run()
+                {
+                    runOnUiThread(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            new TaskPlayFirstSong().execute();
+                        }
+                    });
+                }
+            }, 0, 1000);
+        }
+    }
+
+    @Override
+    public void onPause()
+    {
+        updatePlaying.cancel();
+        super.onPause();
+    }
+
     //region Spotify functions
 
     @Override
@@ -105,8 +220,6 @@ public class ActivityHost extends ActivityPlayer implements SpotifyPlayer.Notifi
     @Override
     public void onLoggedIn() {
         Log.d("MainActivity", "User logged in");
-
-        mPlayer.playUri(null, "spotify:track:2TpxZ7JUBn3uw46aR7qd6V", 0, 0);
     }
 
     @Override

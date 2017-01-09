@@ -76,6 +76,8 @@ public class ActivityStart extends AppCompatActivity
                 result.identifier = jsonResult.getString("identifier");
                 result.key = jsonResult.getString("key");
 
+                Log.d("auxparty", jsonResult.toString());
+
                 return result;
             }
             catch(MalformedURLException e)

@@ -79,7 +79,7 @@ public class ActivityPlayer extends AppCompatActivity
         mSearchBar = (EditText) mSearchLayout.findViewById(R.id.et_search_bar);
         mSearchPromptList = (ListView) mSearchLayout.findViewById(R.id.lv_search_prompt);
 
-        searchAdapter = new AdapterQuery();
+        searchAdapter = new AdapterQuery(service);
         mSearchPromptList.setAdapter(searchAdapter);
 
         mSearchLayout.bringToFront();
@@ -149,7 +149,7 @@ public class ActivityPlayer extends AppCompatActivity
                 String nowPlaying = NetworkUtils.getResponseFromHttpUrl(new URL("http://auxparty.com/api/neutral/nowplaying/" + params[0].toString()));
 
                 JSONObject playingInfo = new JSONObject(nowPlaying);
-                String playingID = playingInfo.getString("apple_id");
+                String playingID = playingInfo.getString("play_id");
 
 
                 String lookup = NetworkUtils.getResponseFromHttpUrl(new URL("https://itunes.apple.com/lookup?id=" + playingID));
@@ -188,4 +188,5 @@ public class ActivityPlayer extends AppCompatActivity
             }
         }
     }
+
 }

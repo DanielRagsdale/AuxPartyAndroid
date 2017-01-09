@@ -20,6 +20,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +29,13 @@ public class AdapterQuery implements ListAdapter
 {
     private List<SongObject> songs = new ArrayList<SongObject>();
     private List<DataSetObserver> observers = new ArrayList<DataSetObserver>();
+
+    private TypeService service;
+
+    public AdapterQuery(TypeService service)
+    {
+        this.service = service;
+    }
 
     public void addSong(SongObject song)
     {
@@ -78,7 +86,7 @@ public class AdapterQuery implements ListAdapter
            public void onClick (View v)
            {
                container.setBackgroundColor(Color.parseColor("#CCEECC"));
-               Log.d("auxparty", song.songTitle + "--" + song.artistName);
+               Log.d("auxparty", song.songTitle + "--" + song.artistName + "  Clicked");
 
 
                //Send request to auxparty
@@ -182,12 +190,11 @@ public class AdapterQuery implements ListAdapter
             {
 
                 JSONObject jsonData = new JSONObject();
-                jsonData.put("apple_id", params[1]);
+                jsonData.put("service", service.name);
+                jsonData.put("play_id", params[1]);
                 jsonData.put("hype_val","0.5");
 
                 String response = NetworkUtils.postDataToHttpURL(new URL("http://auxparty.com/api/client/request/" + params[0]), jsonData);
-
-                Log.d("auxparty", response);
             }
             catch(MalformedURLException e)
             {

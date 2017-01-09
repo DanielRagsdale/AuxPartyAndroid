@@ -6,7 +6,14 @@ package com.auxparty.auxpartyandroid;
 
 public enum TypeService
 {
-    SPOTIFY, APPLE_MUSIC, NONE;
+    SPOTIFY("spotify"), APPLE_MUSIC("apple_music"), NONE("");
+
+    public String name;
+
+    private TypeService(String name)
+    {
+        this.name = name;
+    }
 
     public static TypeService parseServiceString (String serviceString)
     {
