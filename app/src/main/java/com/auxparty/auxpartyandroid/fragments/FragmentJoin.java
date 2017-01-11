@@ -1,15 +1,19 @@
-package com.auxparty.auxpartyandroid;
+package com.auxparty.auxpartyandroid.fragments;
 
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.auxparty.auxpartyandroid.R;
+import com.auxparty.auxpartyandroid.activities.ActivityClient;
 import com.auxparty.auxpartyandroid.utilities.NetworkUtils;
 
 import org.json.JSONException;
@@ -19,21 +23,38 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class ActivityJoin extends AppCompatActivity
+/**
+ * Created by dan on 1/11/17.
+ */
+
+public class FragmentJoin extends Fragment
 {
+    View rootView;
+
     EditText mIdentifierEnter;
     Button mGoButton;
     Button mGPSFind;
+
+
+    public FragmentJoin()
+    {
+        // Required empty public constructor
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_join);
+    }
 
-        mIdentifierEnter = (EditText) findViewById(R.id.et_identifier_enter);
-        mGoButton = (Button) findViewById(R.id.b_go);
-        mGPSFind = (Button) findViewById(R.id.b_gps_find);
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+    {
+        rootView = inflater.inflate(R.layout.fragment_join, container, false);
+
+        mIdentifierEnter = (EditText) rootView.findViewById(R.id.et_identifier_enter);
+        mGoButton = (Button) rootView.findViewById(R.id.b_go);
+        mGPSFind = (Button) rootView.findViewById(R.id.b_gps_find);
 
         mGoButton.setOnClickListener(new View.OnClickListener()
         {
@@ -45,7 +66,7 @@ public class ActivityJoin extends AppCompatActivity
 
                 if(identifier.length() != 5)
                 {
-                    Toast wrongLength = Toast.makeText(ActivityJoin.this, "Party ID must be 5 letters long", Toast.LENGTH_SHORT);
+                    Toast wrongLength = Toast.makeText(getContext(), "Party ID must be 5 letters long", Toast.LENGTH_SHORT);
                     wrongLength.show();
                 }
                 else
@@ -55,6 +76,8 @@ public class ActivityJoin extends AppCompatActivity
                 }
             }
         });
+
+        return rootView;
     }
 
     class TaskGetSessionInfo extends AsyncTask<String, Void, ResultJoin>
@@ -111,24 +134,23 @@ public class ActivityJoin extends AppCompatActivity
         {
             if(result.state == states.NOT_FOUND)
             {
-                Toast notFound = Toast.makeText(ActivityJoin.this, "Could not find party " + result.identifier, Toast.LENGTH_LONG);
-                notFound.show();
+                Toast notFound = Toast.makeText(getContext(), "Could not find party " + result.identifier, Toast.LENGTH_LONG); notFound.show();
                 return;
             }
             else if(result.state == states.NO_CONNECTION)
             {
-                Toast noConnection = Toast.makeText(ActivityJoin.this, "Could not connect to the auxparty servers", Toast.LENGTH_LONG);
+                Toast noConnection = Toast.makeText(getContext(), "Could not connect to the auxparty servers", Toast.LENGTH_LONG);
                 noConnection.show();
                 return;
             }
 
-            Intent startClientActivity = new Intent(ActivityJoin.this, ActivityClient.class);
+            Intent startClientActivity = new Intent(getContext(), ActivityClient.class);
             startClientActivity.putExtra("identifier", result.identifier);
             startClientActivity.putExtra("user_name", result.user_name);
 
             startClientActivity.putExtra("service", result.service_name);
 
-            Toast success = Toast.makeText(ActivityJoin.this, "Joining party " + result.identifier, Toast.LENGTH_SHORT);
+            Toast success = Toast.makeText(getContext(), "Joining party " + result.identifier, Toast.LENGTH_SHORT);
             success.show();
 
             startActivity(startClientActivity);

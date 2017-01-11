@@ -20,7 +20,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:padding="6dp"
-        android:background="#FFFFFFBB" />
+        android:background="@color/colorPrimaryLight" />
 
     <ListView
         android:id="@+id/lv_search_prompt"

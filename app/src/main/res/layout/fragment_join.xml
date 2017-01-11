@@ -6,19 +6,17 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:padding="16dp"
-    tools:context="com.auxparty.auxpartyandroid.ActivityJoin"
+    tools:context="com.auxparty.auxpartyandroid.activities.ActivityMain"
     android:windowSoftInputMode="stateHidden"
-    android:background="#449"
+    android:background="@color/colorWhite"
     android:id="@+id/activity_join">
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="161dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:layout_above="@+id/tv_or"
+        android:layout_marginBottom="25dp"
         android:gravity="center_vertical">
 
         <EditText
@@ -27,7 +25,7 @@
             android:layout_height="wrap_content"
             android:inputType="textShortMessage"
             android:ems="10"
-            android:background="#FFFFFFBB"
+            android:background="@color/colorPrimaryLight"
             android:padding="7dp"
             android:hint="Enter party ID"
             android:textColorHint="?attr/actionMenuTextColor"
@@ -50,7 +48,7 @@
         android:text="or"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/textView5"
+        android:id="@+id/tv_or"
         android:textSize="32sp"
         android:layout_above="@+id/b_gps_find"
         android:layout_marginBottom="25dp"
@@ -65,6 +63,6 @@
         android:textSize="18sp"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="32dp"/>
+        android:layout_marginBottom="80dp"/>
 
 </RelativeLayout>

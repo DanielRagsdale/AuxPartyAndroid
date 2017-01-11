@@ -61,8 +61,6 @@ public class TaskSearchQuery extends AsyncTask<CharSequence, SongObject, Void>
 
         try
         {
-            Log.d("auxparty", queryResults);
-
             JSONObject jsonResults = new JSONObject(queryResults);
 
             switch(service)

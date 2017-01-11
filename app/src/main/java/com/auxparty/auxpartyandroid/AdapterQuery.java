@@ -188,7 +188,6 @@ public class AdapterQuery implements ListAdapter
 
             try
             {
-
                 JSONObject jsonData = new JSONObject();
                 jsonData.put("service", service.name);
                 jsonData.put("play_id", params[1]);

@@ -1,6 +1,8 @@
-package com.auxparty.auxpartyandroid;
+package com.auxparty.auxpartyandroid.activities;
 
 import android.os.Bundle;
+
+import com.auxparty.auxpartyandroid.R;
 
 public class ActivityClient extends ActivityPlayer
 {

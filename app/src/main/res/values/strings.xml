@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">AuxPartyAndroid</string>
     <string name="apple_search_url"></string>
+
+    <string name="ap_create_session"></string>
+
+    <string name="service_music_started">6168574715</string>
 </resources>

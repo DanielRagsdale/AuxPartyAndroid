@@ -2,6 +2,8 @@
 <com.auxparty.auxpartyandroid.SquareImageView
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:maxWidth="512px"
+    android:adjustViewBounds="true"
     app:srcCompat="@mipmap/album_test"
     android:layout_alignParentTop="true"
     android:layout_alignParentLeft="true"

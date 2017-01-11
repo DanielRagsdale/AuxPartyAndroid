@@ -2,33 +2,52 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    tools:context="com.auxparty.auxpartyandroid.ActivityHost"
-    android:background="#449"
     android:id="@+id/activity_player">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:id="@+id/appBarLayout">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:layout_scrollFlags="scroll|enterAlways"
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <include
+        layout="@layout/component_album_art"
+        android:id="@+id/comp_album_art"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:layout_below="@+id/appBarLayout"/>
 
     <include
         layout="@layout/component_song_search"
-        android:id="@+id/comp_song_search"/>
-
+        android:id="@+id/comp_song_search"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="16dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/appBarLayout"/>
 
     <View
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/v_search_touch_close"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/appBarLayout"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/ll_search" />
-
-    <include
-        layout="@layout/component_album_art"
-        android:id="@+id/comp_album_art" />
+        android:layout_marginTop="240dp"/>
 
 </RelativeLayout>

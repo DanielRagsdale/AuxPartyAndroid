@@ -115,8 +115,6 @@ public class NetworkUtils {
             osw.write(jsonData.toString());
             osw.flush();
 
-            Log.d("auxparty", jsonData.toString());
-
             InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 
             Scanner scanner = new Scanner(in);

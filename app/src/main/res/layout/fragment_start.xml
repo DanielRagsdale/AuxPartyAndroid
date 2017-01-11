@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#449"
+    android:background="@color/colorWhite"
     android:padding="16dp"
     android:id="@+id/activity_start">
 
@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:inputType="textShortMessage"
             android:ems="10"
-            android:background="#FFFFFFBB"
+            android:background="@color/colorPrimaryLight"
             android:padding="7dp"
             android:hint="Name your party"
             android:textColorHint="?attr/actionMenuTextColor"
