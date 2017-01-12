@@ -1,8 +1,27 @@
 <resources>
     <string name="app_name">AuxPartyAndroid</string>
+    <string name="friendly_name">AuxParty</string>
     <string name="apple_search_url"></string>
 
     <string name="ap_create_session"></string>
 
     <string name="service_music_started">6168574715</string>
+
+    <string name="key_identifier">identifier</string>
+    <string name="key_key">key</string>
+    <string name="key_spotify_token">token</string>
+    <string name="key_session_name">user_name</string>
+    <string name="key_service_type">service_name</string>
+    <string name="key_track_id">play_id</string>
+
+    <string name="url_ap_nowplaying">http://auxparty.com/api/neutral/nowplaying/</string>
+    <string name="url_ap_info">http://auxparty.com/api/client/info/</string>
+    <string name="url_ap_request">http://auxparty.com/api/client/request/</string>
+    <string name="url_pl_lookup">https://itunes.apple.com/lookup?id=</string>
+    <string name="url_sp_lookup">https://api.spotify.com/v1/tracks/</string>
+
+    <string name="jkey_ap_session_name">user_name</string>
+    <string name="jkey_ap_service_type">service_name</string>
+    <string name="jkey_pl_results">results</string>
+    <string name="jkey_pl_art_loc">artworkUrl100</string>
 </resources>

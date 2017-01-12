@@ -1,9 +1,8 @@
 package com.auxparty.auxpartyandroid;
 
 /**
- * Created by dan on 1/8/17.
+ * Enum representing the different types of music playback services
  */
-
 public enum TypeService
 {
     SPOTIFY("spotify"), APPLE_MUSIC("apple_music"), NONE("");

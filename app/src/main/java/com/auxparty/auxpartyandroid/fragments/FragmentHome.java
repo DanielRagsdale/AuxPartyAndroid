@@ -9,9 +9,8 @@ import android.view.ViewGroup;
 import com.auxparty.auxpartyandroid.R;
 
 /**
- * Created by dan on 1/11/17.
+ * Fragment that displays the initial screen when the user starts the app
  */
-
 public class FragmentHome extends Fragment
 {
 

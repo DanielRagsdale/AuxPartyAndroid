@@ -31,6 +31,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static com.auxparty.auxpartyandroid.R.id.toolbar;
 
@@ -75,10 +77,10 @@ public class ActivityPlayer extends AppCompatActivity
 
         Intent startingIntent = getIntent();
 
-        identifier = startingIntent.getStringExtra("identifier");
-        name = startingIntent.getStringExtra("user_name");
+        identifier = startingIntent.getStringExtra(getString(R.string.key_identifier));
+        name = startingIntent.getStringExtra(getString(R.string.key_session_name));
 
-        service = TypeService.parseServiceString(startingIntent.getStringExtra("service"));
+        service = TypeService.parseServiceString(startingIntent.getStringExtra(getString(R.string.key_service_type)));
 
         Log.d("auxparty", "Player identifier" + identifier);
         Log.d("auxparty", "Player name" + name);
@@ -91,8 +93,6 @@ public class ActivityPlayer extends AppCompatActivity
 
         getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setTitle("(" + identifier.toUpperCase() +") " + name);
-        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#333333")));
-
 
 
         mActivityMain = (RelativeLayout) findViewById(R.id.activity_player);
@@ -133,8 +133,28 @@ public class ActivityPlayer extends AppCompatActivity
 
         mSearchBar.addTextChangedListener(new QueryService(service));
 
-        TaskGetArt getArt = new TaskGetArt();
-        getArt.execute(identifier);
+        pollAlbumArt();
+    }
+
+    //TODO add more sensible system for updating the art if your are the host
+    Timer updateArt;
+    /**
+     * Poll the auxparty track listing until there is a valid next song.
+     * Ends when nowPlaying is not null
+     */
+    public void pollAlbumArt()
+    {
+        updateArt = new Timer();
+        updateArt.schedule(new TimerTask()
+        {
+            @Override
+            public void run()
+            {
+                TaskGetArt getArt = new TaskGetArt();
+                getArt.execute(identifier);
+            }
+            //TODO poll art less frequently in production
+        }, 0, 1500);
     }
 
     class QueryService implements TextWatcher
@@ -173,10 +193,10 @@ public class ActivityPlayer extends AppCompatActivity
 
             try
             {
-                String nowPlaying = NetworkUtils.getResponseFromHttpUrl(new URL("http://auxparty.com/api/neutral/nowplaying/" + params[0].toString()));
+                String nowPlaying = NetworkUtils.getResponseFromHttpUrl(new URL(getString(R.string.url_ap_nowplaying) + params[0].toString()));
 
                 JSONObject playingInfo = new JSONObject(nowPlaying);
-                String playingID = playingInfo.getString("play_id");
+                String playingID = playingInfo.getString(getString(R.string.key_track_id));
 
                 String artLoc = "";
 
@@ -184,12 +204,12 @@ public class ActivityPlayer extends AppCompatActivity
                 {
                     case APPLE_MUSIC:
                     {
-                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL("https://itunes.apple.com/lookup?id=" + playingID));
+                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL(getString(R.string.url_pl_lookup) + playingID));
 
                         JSONObject songInfo = new JSONObject(lookup);
-                        JSONObject results = songInfo.getJSONArray("results").getJSONObject(0);
+                        JSONObject results = songInfo.getJSONArray(getString(R.string.jkey_pl_results)).getJSONObject(0);
 
-                        String smallArtLoc = results.getString("artworkUrl100");
+                        String smallArtLoc = results.getString(getString(R.string.jkey_pl_art_loc));
 
                         artLoc = smallArtLoc.replace("100", "512");
                         break;
@@ -197,7 +217,7 @@ public class ActivityPlayer extends AppCompatActivity
 
                     case SPOTIFY:
                     {
-                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL("https://api.spotify.com/v1/tracks/" + playingID));
+                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL(getString(R.string.url_sp_lookup) + playingID));
                         JSONObject songInfo = new JSONObject(lookup);
                         JSONArray images = songInfo.getJSONObject("album").getJSONArray("images");
 
@@ -208,8 +228,6 @@ public class ActivityPlayer extends AppCompatActivity
                 }
 
                 art = NetworkUtils.getBitmapFromHttpURL(artLoc);
-
-                Log.d("auxparty", "getArt executed");
             }
             catch (IOException e)
             {

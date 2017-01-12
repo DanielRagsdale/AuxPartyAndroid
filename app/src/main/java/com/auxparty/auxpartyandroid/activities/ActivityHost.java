@@ -15,9 +15,8 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Spotify;
 
 /**
- * Created by dan on 1/4/17.
+ * Activity displayed for a user when they are hosting a session.
  */
-
 public class ActivityHost extends ActivityPlayer
 {
     ServicePlayMusic mServiceMusic;
@@ -40,7 +39,7 @@ public class ActivityHost extends ActivityPlayer
         setContentView(R.layout.activity_host);
 
         Intent startingIntent = getIntent();
-        key = startingIntent.getStringExtra("key");
+        key = startingIntent.getStringExtra(getString(R.string.key_key));
 
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
@@ -67,9 +66,9 @@ public class ActivityHost extends ActivityPlayer
                 String token = response.getAccessToken();
 
                 Intent startingIntent = new Intent(ActivityHost.this, ServicePlayMusic.class);
-                startingIntent.putExtra("identifier", identifier);
-                startingIntent.putExtra("key", key);
-                startingIntent.putExtra("token", token);
+                startingIntent.putExtra(getString(R.string.key_identifier), identifier);
+                startingIntent.putExtra(getString(R.string.key_identifier), key);
+                startingIntent.putExtra(getString(R.string.key_spotify_token), token);
 
                 bindService(startingIntent, musicServiceConnection, Context.BIND_AUTO_CREATE);
 
@@ -108,5 +107,4 @@ public class ActivityHost extends ActivityPlayer
             mIsBound = false;
         }
     };
-
 }

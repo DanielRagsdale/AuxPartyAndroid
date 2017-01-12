@@ -35,6 +35,8 @@ public class FragmentStart extends Fragment
     EditText mStartName;
     Button mStartGo;
 
+    protected static boolean createRunning;
+
     public FragmentStart()
     {
         // Required empty public constructor
@@ -60,12 +62,13 @@ public class FragmentStart extends Fragment
             @Override
             public void onClick(View v)
             {
-                TaskCreateSession task = new TaskCreateSession();
-                String name = mStartName.getText().toString();
+                if(!createRunning)
+                {
+                    TaskCreateSession task = new TaskCreateSession();
+                    String name = mStartName.getText().toString();
 
-                Log.d("auxparty", name);
-
-                task.execute(name);
+                    task.execute(name);
+                }
             }
         });
 
@@ -81,6 +84,12 @@ public class FragmentStart extends Fragment
     class TaskCreateSession extends AsyncTask<String, Void, ResultCreate>
     {
         @Override
+        protected void onPreExecute()
+        {
+            createRunning = true;
+        }
+
+        @Override
         protected ResultCreate doInBackground(String... params)
         {
             ResultCreate result = new ResultCreate();
@@ -93,7 +102,7 @@ public class FragmentStart extends Fragment
                 JSONObject jsonData = new JSONObject();
 
                 jsonData.put("user_name", params[0]);
-                jsonData.put("service", "spotify");
+                jsonData.put("service_name", "spotify");
 
                 String response = NetworkUtils.postDataToHttpURL(new URL("http://auxparty.com/api/host/create"), jsonData);
 
@@ -101,8 +110,6 @@ public class FragmentStart extends Fragment
 
                 result.identifier = jsonResult.getString("identifier");
                 result.key = jsonResult.getString("key");
-
-                Log.d("auxparty", jsonResult.toString());
 
                 return result;
             }
@@ -128,6 +135,8 @@ public class FragmentStart extends Fragment
         @Override
         protected void onPostExecute(ResultCreate result)
         {
+            createRunning = false;
+
             if(result == null)
             {
                 Toast failure = Toast.makeText(getContext(), "Could not connect to the auxparty servers", Toast.LENGTH_LONG);

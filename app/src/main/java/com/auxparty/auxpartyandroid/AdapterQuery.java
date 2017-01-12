@@ -25,6 +25,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter that provides results when the user searches to request a song
+ */
 public class AdapterQuery implements ListAdapter
 {
     private List<SongObject> songs = new ArrayList<SongObject>();
@@ -188,6 +191,7 @@ public class AdapterQuery implements ListAdapter
 
             try
             {
+                //TODO replace hardcoded strings with resource items
                 JSONObject jsonData = new JSONObject();
                 jsonData.put("service", service.name);
                 jsonData.put("play_id", params[1]);
@@ -201,7 +205,7 @@ public class AdapterQuery implements ListAdapter
             }
             catch(IOException e)
             {
-                e.printStackTrace();
+//                e.printStackTrace();
             }
             catch(JSONException e)
             {

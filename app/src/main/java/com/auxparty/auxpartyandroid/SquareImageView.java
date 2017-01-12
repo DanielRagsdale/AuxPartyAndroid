@@ -5,9 +5,8 @@ import android.util.AttributeSet;
 import android.widget.ImageView;
 
 /**
- * Created by dan on 12/31/16.
+ * An ImageView that will always have height = width
  */
-
 public class SquareImageView extends ImageView
 {
     public SquareImageView(Context context)

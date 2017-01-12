@@ -36,6 +36,7 @@ public class ActivityMain extends AppCompatActivity {
 
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle(getText(R.string.friendly_name));
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         setupViewPager(viewPager);
@@ -50,6 +51,7 @@ public class ActivityMain extends AppCompatActivity {
         adapter.addFragment(new FragmentHome(), "HOME");
         adapter.addFragment(new FragmentJoin(), "JOIN");
         viewPager.setAdapter(adapter);
+        viewPager.setCurrentItem(1);
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter

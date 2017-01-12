@@ -7,8 +7,10 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import com.auxparty.auxpartyandroid.R;
 import com.auxparty.auxpartyandroid.SongObject;
 import com.auxparty.auxpartyandroid.activities.ActivityHost;
 import com.auxparty.auxpartyandroid.utilities.NetworkUtils;
@@ -31,6 +33,9 @@ import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
+/**
+ * Service that runs in the background and handles playing of music
+ */
 public class ServicePlayMusic extends Service implements SpotifyPlayer.NotificationCallback, ConnectionStateCallback, Player.OperationCallback
 {
     private final IBinder musicBinder = new MusicBinder();
@@ -51,12 +56,11 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
     @Override
     public IBinder onBind(Intent intent)
     {
-        identifier = intent.getStringExtra("identifier");
+        identifier = intent.getStringExtra(getString(R.string.key_identifier));
 
-        Log.i("auxparty", identifier);
-        key = intent.getStringExtra("key");
+        key = intent.getStringExtra(getString(R.string.key_key));
 
-        String token = intent.getStringExtra("token");
+        String token = intent.getStringExtra(getString(R.string.key_spotify_token));
 
         Config playerConfig = new Config(this, token, ActivityHost.CLIENT_ID);
         Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver()
@@ -122,14 +126,6 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         Log.d("ServicePlayMusic", "Playback event received: " + playerEvent.name());
 
-        if(mPlayer.getMetadata().currentTrack == null)
-        {
-            Log.d("auxparty", "current track is null");
-        }
-        else
-        {
-            Log.d("auxparty", mPlayer.getMetadata().currentTrack.name);
-        }
         switch (playerEvent) {
             /**
              * Step 0: Increment the current song number
@@ -155,11 +151,9 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
                     TaskSetPlaying setPlaying = new TaskSetPlaying();
                     setPlaying.execute(identifier, nowPlaying.servicePlayID);
 
-                    //TODO reimplement getArt
-//                ActivityPlayer.TaskGetArt getArt = new ActivityPlayerTaskGetArt();
-//                getArt.execute(identifier);
-
                     long delay = Math.max(0, nowPlaying.duration - 15000);
+
+                    Log.d("auxparty", "Track length is " + delay);
 
                     //Find next song
                     handler.postDelayed(new Runnable() {
@@ -244,9 +238,11 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
      */
     private void queueSong(SongObject song)
     {
-        Log.d("auxparty", song.servicePlayID + " queued");
+        String queueString = "spotify:track:" + song.servicePlayID;
 
-        mPlayer.queue(null, "spotify:track:" + song.servicePlayID);
+        Log.d("auxparty", queueString + " queued");
+
+        mPlayer.queue(this, queueString);
         nowPlaying = song;
     }
 

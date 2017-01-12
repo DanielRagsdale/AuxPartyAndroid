@@ -24,9 +24,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
- * Created by dan on 1/11/17.
+ * Fragment that displays the tools for a user to join an existing session
  */
-
 public class FragmentJoin extends Fragment
 {
     View rootView;
@@ -96,13 +95,13 @@ public class FragmentJoin extends Fragment
 
             try
             {
-                String sessionInfo = NetworkUtils.getResponseFromHttpUrl(new URL("http://auxparty.com/api/client/info/" + params[0]));
+                String sessionInfo = NetworkUtils.getResponseFromHttpUrl(new URL(getString(R.string.url_ap_info) + params[0]));
                 JSONObject json = new JSONObject(sessionInfo);
 
                 if(json.getBoolean("does_exist"))
                 {
-                    sess.user_name = json.getString("user_name");
-                    sess.service_name = json.getString("service_name");
+                    sess.user_name = json.getString(getString(R.string.jkey_ap_session_name));
+                    sess.service_name = json.getString(getString(R.string.jkey_ap_service_type));
                     sess.state = states.SUCCESS;
                 }
                 else
@@ -145,10 +144,10 @@ public class FragmentJoin extends Fragment
             }
 
             Intent startClientActivity = new Intent(getContext(), ActivityClient.class);
-            startClientActivity.putExtra("identifier", result.identifier);
-            startClientActivity.putExtra("user_name", result.user_name);
+            startClientActivity.putExtra(getString(R.string.key_identifier), result.identifier);
+            startClientActivity.putExtra(getString(R.string.key_session_name), result.user_name);
 
-            startClientActivity.putExtra("service", result.service_name);
+            startClientActivity.putExtra(getString(R.string.key_service_type), result.service_name);
 
             Toast success = Toast.makeText(getContext(), "Joining party " + result.identifier, Toast.LENGTH_SHORT);
             success.show();
