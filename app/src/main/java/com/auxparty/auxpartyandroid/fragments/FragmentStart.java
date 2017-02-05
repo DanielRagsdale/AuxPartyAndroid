@@ -148,7 +148,7 @@ public class FragmentStart extends Fragment
             startHostActivity.putExtra("identifier", result.identifier);
             startHostActivity.putExtra("user_name", result.user_name);
             startHostActivity.putExtra("key", result.key);
-            startHostActivity.putExtra("service", result.service);
+            startHostActivity.putExtra("service_name", result.service);
 
             getActivity().startActivity(startHostActivity);
         }

@@ -39,7 +39,7 @@ public class ActivityHost extends ActivityPlayer
         setContentView(R.layout.activity_host);
 
         Intent startingIntent = getIntent();
-        key = startingIntent.getStringExtra(getString(R.string.key_key));
+        key = startingIntent.getStringExtra("key");
 
         AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
                 AuthenticationResponse.Type.TOKEN,
@@ -67,7 +67,7 @@ public class ActivityHost extends ActivityPlayer
 
                 Intent startingIntent = new Intent(ActivityHost.this, ServicePlayMusic.class);
                 startingIntent.putExtra(getString(R.string.key_identifier), identifier);
-                startingIntent.putExtra(getString(R.string.key_identifier), key);
+                startingIntent.putExtra(getString(R.string.key_key), key);
                 startingIntent.putExtra(getString(R.string.key_spotify_token), token);
 
                 bindService(startingIntent, musicServiceConnection, Context.BIND_AUTO_CREATE);

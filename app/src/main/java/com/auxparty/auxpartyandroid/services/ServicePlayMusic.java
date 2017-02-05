@@ -1,6 +1,7 @@
 package com.auxparty.auxpartyandroid.services;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -18,6 +19,7 @@ import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
 import com.spotify.sdk.android.player.Error;
 import com.spotify.sdk.android.player.Metadata;
+import com.spotify.sdk.android.player.PlaybackState;
 import com.spotify.sdk.android.player.Player;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
@@ -28,15 +30,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.ReflectPermission;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Hashtable;
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
  * Service that runs in the background and handles playing of music
  */
-public class ServicePlayMusic extends Service implements SpotifyPlayer.NotificationCallback, ConnectionStateCallback, Player.OperationCallback
+public class ServicePlayMusic extends Service implements Player.NotificationCallback, ConnectionStateCallback, Player.OperationCallback
 {
     private final IBinder musicBinder = new MusicBinder();
 
@@ -52,6 +57,8 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
     private Timer updatePlaying;
     final Handler handler = new Handler();
 
+    private BroadcastReceiver mNetworkStateReceiver;
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent)
@@ -62,12 +69,13 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
 
         String token = intent.getStringExtra(getString(R.string.key_spotify_token));
 
-        Config playerConfig = new Config(this, token, ActivityHost.CLIENT_ID);
+        Config playerConfig = new Config(getApplicationContext(), token, ActivityHost.CLIENT_ID);
         Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver()
         {
             @Override
             public void onInitialized(SpotifyPlayer spotifyPlayer)
             {
+                Log.d("auxparty-spotify", "Player initialized");
                 mPlayer = spotifyPlayer;
                 mPlayer.addConnectionStateCallback(ServicePlayMusic.this);
                 mPlayer.addNotificationCallback(ServicePlayMusic.this);
@@ -99,6 +107,7 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
      */
     public void pollTracks()
     {
+        Log.d("auxparty", "poll tracks init");
         if(nowPlaying == null)
         {
             updatePlaying = new Timer();
@@ -150,19 +159,6 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
                     //TODO eliminate race condition
                     TaskSetPlaying setPlaying = new TaskSetPlaying();
                     setPlaying.execute(identifier, nowPlaying.servicePlayID);
-
-                    long delay = Math.max(0, nowPlaying.duration - 15000);
-
-                    Log.d("auxparty", "Track length is " + delay);
-
-                    //Find next song
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            TaskQueueSong loadNext = new TaskQueueSong();
-                            loadNext.execute();
-                        }
-                    }, delay);
                 }
 
                 break;
@@ -176,88 +172,16 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
                     pollTracks();
                 }
                 break;
+
+            case kSpPlaybackNotifyMetadataChanged:
+                PlaybackState state = mPlayer.getPlaybackState();
+//                Log.d("auxparty", "State is:   " + state.toString());
+                break;
+
             // Handle event type as necessary
             default:
                 break;
         }
-    }
-
-    //region Spotify functions
-    @Override
-    public void onPlaybackError(com.spotify.sdk.android.player.Error error) {
-        Log.d("MainActivity", "Playback error received: " + error.name());
-        switch (error) {
-            // Handle error type as necessary
-            default:
-                break;
-        }
-    }
-
-    @Override
-    public void onLoggedIn() {
-        Log.d("MainActivity", "User logged in");
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Log.d("MainActivity", "User logged out");
-    }
-
-    @Override
-    public void onLoginFailed(com.spotify.sdk.android.player.Error error) {
-        Log.d("MainActivity", "Login failed");
-    }
-
-    @Override
-    public void onTemporaryError() {
-        Log.d("MainActivity", "Temporary error occurred");
-    }
-
-    @Override
-    public void onConnectionMessage(String message) {
-        Log.d("MainActivity", "Received connection message: " + message);
-    }
-
-    @Override
-    public void onError(Error error)
-    {
-        Log.d("auxparty", error.toString());
-    }
-
-    @Override
-    public void onSuccess()
-    {
-        Log.d("auxparty", "playback success");
-    }
-    //endregion
-
-    /**
-     * Queue the given song with spotify
-     *
-     * @param song
-     */
-    private void queueSong(SongObject song)
-    {
-        String queueString = "spotify:track:" + song.servicePlayID;
-
-        Log.d("auxparty", queueString + " queued");
-
-        mPlayer.queue(this, queueString);
-        nowPlaying = song;
-    }
-
-    /**
-     * Play the given song with spotify
-     *
-     * @param song
-     */
-    private void playSong(SongObject song)
-    {
-        Log.d("auxparty", song.servicePlayID + " played");
-
-        paused = false;
-
-        mPlayer.playUri(ServicePlayMusic.this, "spotify:track:" + song.servicePlayID, 0, 0);
     }
 
     /**
@@ -291,6 +215,26 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
             }
 
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void v)
+        {
+            long pos = mPlayer.getPlaybackState().positionMs;
+
+            long delay = Math.max(0, nowPlaying.duration - pos - 15000);
+
+            Log.d("auxparty", "Track length is " + nowPlaying.duration);
+
+            //Find next song
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    TaskQueueSong loadNext = new TaskQueueSong();
+                    loadNext.execute();
+                }
+            }, delay);
+
         }
     }
 
@@ -386,4 +330,93 @@ public class ServicePlayMusic extends Service implements SpotifyPlayer.Notificat
             queueSong(toPlay);
         }
     }
+
+    /**
+     * Play the given song with spotify
+     *
+     * @param song
+     */
+    private void playSong(SongObject song)
+    {
+        Log.d("auxparty", song.servicePlayID + " played");
+
+        Metadata m = mPlayer.getMetadata();
+
+//        Log.d("auxparty", " " + m.toString());
+
+        paused = false;
+
+        mPlayer.playUri(ServicePlayMusic.this, "spotify:track:" + song.servicePlayID, 0, 0);
+//        mPlayer.queue(ServicePlayMusic.this, "spotify:track:6KywfgRqvgvfJc3JRwaZdZ");
+
+//        Log.d("auxparty-spotify", "playback data: " + mPlayer.getPlaybackState().toString());
+//        Log.d("auxparty-spotify", "metadata: " + mPlayer.getMetadata().toString());
+    }
+
+    /**
+     * Queue the given song with spotify
+     *
+     * @param song
+     */
+    private void queueSong(SongObject song)
+    {
+        Log.d("auxparty", song.servicePlayID + " queued");
+
+        Metadata m = mPlayer.getMetadata();
+
+        Log.d("auxparty", " " + m.toString());
+
+
+        mPlayer.queue(this, "spotify:track:" + song.servicePlayID);
+        nowPlaying = song;
+    }
+
+    //region Spotify functions
+    @Override
+    public void onPlaybackError(com.spotify.sdk.android.player.Error error) {
+        Log.d("auxparty-service", "Playback error received: " + error.name());
+        switch (error) {
+            // Handle error type as necessary
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public void onLoggedIn() {
+        Log.d("auxparty-spotify", "User logged in");
+    }
+
+    @Override
+    public void onLoggedOut() {
+        Log.d("auxparty-spotify", "User logged out");
+    }
+
+    @Override
+    public void onLoginFailed(com.spotify.sdk.android.player.Error error) {
+        Log.d("auxparty-spotify", "Login failed");
+    }
+
+    @Override
+    public void onTemporaryError() {
+        Log.d("auxparty-spotify", "Temporary error occurred");
+    }
+
+    @Override
+    public void onConnectionMessage(String message) {
+        Log.d("auxparty-spotify", "Received connection message: " + message);
+    }
+
+    @Override
+    public void onError(Error error)
+    {
+        Log.d("auxparty", error.toString());
+    }
+
+    @Override
+    public void onSuccess()
+    {
+        Log.d("auxparty", "playback success");
+    }
+    //endregion
 }

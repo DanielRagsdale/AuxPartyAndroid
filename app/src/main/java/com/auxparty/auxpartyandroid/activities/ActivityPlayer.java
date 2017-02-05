@@ -80,7 +80,7 @@ public class ActivityPlayer extends AppCompatActivity
         identifier = startingIntent.getStringExtra(getString(R.string.key_identifier));
         name = startingIntent.getStringExtra(getString(R.string.key_session_name));
 
-        service = TypeService.parseServiceString(startingIntent.getStringExtra(getString(R.string.key_service_type)));
+        service = TypeService.parseServiceString(startingIntent.getStringExtra("service_name"));
 
         Log.d("auxparty", "Player identifier" + identifier);
         Log.d("auxparty", "Player name" + name);
@@ -188,7 +188,8 @@ public class ActivityPlayer extends AppCompatActivity
     class TaskGetArt extends AsyncTask<CharSequence, Void, Bitmap>
     {
         @Override
-        protected Bitmap doInBackground(CharSequence... params) {
+        protected Bitmap doInBackground(CharSequence... params)
+        {
             Bitmap art = null;
 
             try
@@ -204,7 +205,7 @@ public class ActivityPlayer extends AppCompatActivity
                 {
                     case APPLE_MUSIC:
                     {
-                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL(getString(R.string.url_pl_lookup) + playingID));
+                        String lookup = NetworkUtils.getResponseFromHttpUrl(new URL("https://itunes.apple.com/lookup?id=" + playingID));
 
                         JSONObject songInfo = new JSONObject(lookup);
                         JSONObject results = songInfo.getJSONArray(getString(R.string.jkey_pl_results)).getJSONObject(0);
@@ -254,5 +255,4 @@ public class ActivityPlayer extends AppCompatActivity
             }
         }
     }
-
 }

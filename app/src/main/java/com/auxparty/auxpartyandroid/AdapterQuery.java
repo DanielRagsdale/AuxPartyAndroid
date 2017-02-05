@@ -182,18 +182,24 @@ public class AdapterQuery implements ListAdapter
         }
     }
 
+    /**
+     *
+     */
     class TaskSendRequest extends AsyncTask<String, Void, Void>
     {
         @Override
         protected Void doInBackground(String... params)
         {
-            Log.d("auxparty", "Request submitted");
-
             try
             {
                 //TODO replace hardcoded strings with resource items
+
+                /*
+                 * "service" is either "apple_music" or "spotify
+                 * "play_id" is the track id
+                 */
                 JSONObject jsonData = new JSONObject();
-                jsonData.put("service", service.name);
+                jsonData.put("service_name", service.name);
                 jsonData.put("play_id", params[1]);
                 jsonData.put("hype_val","0.5");
 
